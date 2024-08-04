@@ -4,4 +4,5 @@ sgBus displays the next bus arrival timing based on the bus stop nearest to you 
 Q: Why does the app not display any symbols or labels to denote oncoming buses that are wheelchair accessible?
 A: Ministry of Transport has stated that all public buses are wheelchair accessible.
 
-Source: https://shorturl.at/Lf90D
+Source:
+https://shorturl.at/Lf90D
