@@ -1,31 +1,23 @@
-import dotenv from 'dotenv';
-dotenv.config();
-const API_KEY = process.env.API_KEY;
-console.log(API_KEY);
-
 export const fetchBusStops = async (skip: number) => {
-    const response = await fetch(`https://datamall2.mytransport.sg/ltaodataservice/BusStops?$skip=${skip}`, {
+  const response = await fetch(`https://sgbus-server.onrender.com/api/bus-stops?$skip=${skip}`, {
       headers: {
-        'AccountKey': 'API_KEY',
-        'Accept': 'application/json'
+          'Accept': 'application/json'
       }
-    });
-    if (!response.ok) {
+  });
+  if (!response.ok) {
       throw new Error('Network response was not ok.');
-    }
-    return response.json();
-  };
-  
-  export const fetchBusArrivalData = async (busStopCode: string) => {
-    const response = await fetch(`http://datamall2.mytransport.sg/ltaodataservice/BusArrivalv2?BusStopCode=${busStopCode}`, {
+  }
+  return response.json();
+};
+
+export const fetchBusArrivalData = async (busStopCode: string) => {
+  const response = await fetch(`https://sgbus-server.onrender.com/api/bus-arrival?BusStopCode=${busStopCode}`, {
       headers: {
-        'AccountKey': 'API_KEY',
-        'Accept': 'application/json'
+          'Accept': 'application/json'
       }
-    });
-    if (!response.ok) {
+  });
+  if (!response.ok) {
       throw new Error('Network response was not ok');
-    }
-    return response.json();
-  };
-  
+  }
+  return response.json();
+};

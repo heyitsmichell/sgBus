@@ -15,9 +15,9 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "Allow $(PRODUCT_NAME) to use your location.",
-        "NSLocationAlwaysUsageDescription": "Allow $(PRODUCT_NAME) to use your location.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "Allow $(PRODUCT_NAME) to use your location."
+        "NSLocationWhenInUseUsageDescription": "Allow sgBus to use your location.",
+        "NSLocationAlwaysUsageDescription": "Allow sgBus to use your location.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Allow sgBus to use your location."
       },
       "bundleIdentifier": "com.anonymous.sgBus"
     },
@@ -43,7 +43,7 @@
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
+          "locationAlwaysAndWhenInUsePermission": "Allow sgBus to use your location."
         }
       ]
     ],

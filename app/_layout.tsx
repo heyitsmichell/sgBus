@@ -30,7 +30,6 @@ export default function RootLayout() {
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false, title: '' }} />
         <Stack.Screen name="busStop" options={{ headerShown: true, title: '' }} />
-        <Stack.Screen name="+not-found" />
       </Stack>
     </ThemeProvider>
   );
