@@ -5,6 +5,7 @@ import { useColorScheme } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { calculateMinutesLeft } from '@/components/Calculation';
 import { fetchBusArrivalData } from '@/services/api';
+import * as Location from 'expo-location';
 
 interface Arrival {
   key: string;
@@ -27,6 +28,7 @@ const BusStop = () => {
   const [distance, setDistance] = useState('');
   const [latitude, setLatitude] = useState<number | null>(null);
   const [longitude, setLongitude] = useState<number | null>(null);
+  const [userLocation, setUserLocation] = useState<Location.LocationObject | null>(null);
   const [busArrivalData, setBusArrivalData] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -151,18 +153,41 @@ const BusStop = () => {
     </View>
   );
 
+  const getCurrentLocation = async () => {
+    try {
+      let location = await Location.getCurrentPositionAsync({
+      accuracy:Location.Accuracy.High,
+      timeInterval: 10000,
+      distanceInterval: 80,
+      });
+      setUserLocation(location);
+      if (location.coords.latitude && location.coords.longitude) {
+        setLatitude(location.coords.latitude);
+        setLongitude(location.coords.longitude);
+      }
+    } catch (error) {
+      console.error('Error fetching current location:', error);
+    }
+  };
+
+  useEffect(() => {
+    getCurrentLocation();
+  }, []);
+
   return (
     <View style={[styles.container, { backgroundColor: colorScheme === 'dark' ? '#151718' : '#fff' }]}>
-      {/* MapView Component */}
       {latitude && longitude ? (
         <MapView
           style={styles.map}
           initialRegion={{
             latitude: latitude,
             longitude: longitude,
-            latitudeDelta: 0.002, // Adjust the zoom level
-            longitudeDelta: 0.002, // Adjust the zoom level
+            latitudeDelta: 0.002,
+            longitudeDelta: 0.002,
           }}
+          showsUserLocation={true}
+          followsUserLocation={true}
+          showsMyLocationButton={true}
         >
           <Marker coordinate={{ latitude, longitude }} />
         </MapView>
@@ -217,7 +242,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   map: {
-    height: 250, // Adjust the height as needed
+    height: 250,
     marginBottom: 16,
   },
   defaultImage: {
