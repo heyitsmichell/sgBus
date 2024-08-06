@@ -51,7 +51,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   section: {
-    // marginHorizontal: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#777',
   },

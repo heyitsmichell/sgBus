@@ -1,11 +1,12 @@
-import React, { useEffect, useState, useCallback, useLayoutEffect } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, FlatList, RefreshControl, Image } from 'react-native';
+import React, { useEffect, useState, useCallback, useLayoutEffect, useRef, useMemo } from 'react';
+import { View, Text, StyleSheet, ActivityIndicator, FlatList, RefreshControl, Image, TouchableOpacity, Platform } from 'react-native';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { useColorScheme } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { calculateMinutesLeft } from '@/components/Calculation';
 import { fetchBusArrivalData } from '@/services/api';
-import * as Location from 'expo-location';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { getCurrentLocation } from '../components/Location';
 
 interface Arrival {
   key: string;
@@ -22,6 +23,9 @@ interface Service {
 const BusStop = () => {
   const params = useLocalSearchParams();
   const navigation = useNavigation();
+  const mapRef = useRef<MapView>(null);
+  const colorScheme = useColorScheme();
+
   const [description, setDescription] = useState('');
   const [busStopCode, setBusStopCode] = useState('');
   const [roadName, setRoadName] = useState('');
@@ -32,8 +36,6 @@ const BusStop = () => {
   const [busArrivalData, setBusArrivalData] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-
-  const colorScheme = useColorScheme();
 
   useEffect(() => {
     setDescription(String(params.description));
@@ -57,7 +59,7 @@ const BusStop = () => {
     });
   }, [navigation, description]);
 
-  const fetchBusArrivalDataWrapper = async () => {
+  const fetchBusArrivalDataWrapper = useCallback(async () => {
     try {
       const data = await fetchBusArrivalData(params.busStopCode);
       const sortedData = data.Services.sort((a: any, b: any) => a.ServiceNo.localeCompare(b.ServiceNo)).map((service: any) => {
@@ -95,18 +97,18 @@ const BusStop = () => {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [params.busStopCode]);
 
   useEffect(() => {
     fetchBusArrivalDataWrapper();
-  }, [params.busStopCode]);
+  }, [fetchBusArrivalDataWrapper]);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     fetchBusArrivalDataWrapper();
-  }, []);
+  }, [fetchBusArrivalDataWrapper]);
 
-  const getBackgroundColor = (load: string, time: string) => {
+  const getBackgroundColor = useCallback((load: string, time: string) => {
     if (time === 'NA') {
       return colorScheme === 'dark' ? '#151718' : '#fff'; // Set to black for dark mode, white for light mode
     }
@@ -120,9 +122,9 @@ const BusStop = () => {
       default:
         return '#11144C'; // Navy
     }
-  };
+  }, [colorScheme]);
 
-  const getVehicleImage = (type: string) => {
+  const getVehicleImage = useCallback((type: string) => {
     switch (type) {
       case 'SD':
         return require('../assets/images/singlebus.png');
@@ -133,9 +135,9 @@ const BusStop = () => {
       default:
         return null;
     }
-  };
+  }, []);
 
-  const renderBusService = ({ item }: { item: Service }) => (
+  const renderBusService = useCallback(({ item }: { item: Service }) => (
     <View style={styles.serviceContainer}>
       <Text style={[styles.serviceNumber, { color: colorScheme === 'dark' ? '#fff' : '#000' }]}>{item.ServiceNo}</Text>
       <View style={styles.arrivalsContainer}>
@@ -151,33 +153,46 @@ const BusStop = () => {
         ))}
       </View>
     </View>
-  );
-
-  const getCurrentLocation = async () => {
-    try {
-      let location = await Location.getCurrentPositionAsync({
-      accuracy:Location.Accuracy.High,
-      timeInterval: 10000,
-      distanceInterval: 80,
-      });
-      setUserLocation(location);
-      if (location.coords.latitude && location.coords.longitude) {
-        setLatitude(location.coords.latitude);
-        setLongitude(location.coords.longitude);
-      }
-    } catch (error) {
-      console.error('Error fetching current location:', error);
-    }
-  };
+  ), [colorScheme, getBackgroundColor, getVehicleImage]);
 
   useEffect(() => {
-    getCurrentLocation();
+    (async () => {
+      const location = await getCurrentLocation();
+      setUserLocation(location);
+    })();
   }, []);
+
+  const focusOnMarker = useCallback(() => {
+    if (mapRef.current && latitude && longitude) {
+      mapRef.current.animateToRegion({
+        latitude: latitude,
+        longitude: longitude,
+        latitudeDelta: 0.002,
+        longitudeDelta: 0.002,
+      });
+    }
+  }, [latitude, longitude]);
+
+  useEffect(() => {
+    if (mapRef.current && userLocation && latitude && longitude) {
+      mapRef.current.fitToCoordinates(
+        [
+          { latitude: userLocation.coords.latitude, longitude: userLocation.coords.longitude },
+          { latitude, longitude },
+        ],
+        {
+          edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
+          animated: true,
+        }
+      );
+    }
+  }, [userLocation, latitude, longitude]);
 
   return (
     <View style={[styles.container, { backgroundColor: colorScheme === 'dark' ? '#151718' : '#fff' }]}>
       {latitude && longitude ? (
         <MapView
+          ref={mapRef}
           style={styles.map}
           initialRegion={{
             latitude: latitude,
@@ -186,12 +201,19 @@ const BusStop = () => {
             longitudeDelta: 0.002,
           }}
           showsUserLocation={true}
-          followsUserLocation={true}
           showsMyLocationButton={true}
         >
           <Marker coordinate={{ latitude, longitude }} />
         </MapView>
       ) : null}
+
+      <TouchableOpacity style={styles.iconButton} onPress={focusOnMarker}>
+        <Ionicons
+          name={Platform.OS === 'ios' ? 'pin' : 'location'}
+          size={16}
+          color={colorScheme === 'dark' ? '#fff' : '#000'}
+        />
+      </TouchableOpacity>
 
       {loading ? (
         <ActivityIndicator size="large" color={colorScheme === 'dark' ? '#fff' : '#000'} />
@@ -249,6 +271,15 @@ const styles = StyleSheet.create({
     height: 32,
     marginTop: 5,
     resizeMode: 'contain',
+  },
+  iconButton: {
+    position: 'absolute',
+    top: 210,
+    right: 8,
+    padding: 8,
+    backgroundColor: useColorScheme() === 'dark' ? '#151718' : '#fff',
+    borderRadius: 30,
+    zIndex: 10,
   },
 });
 

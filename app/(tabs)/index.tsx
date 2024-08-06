@@ -19,6 +19,7 @@ const Nearby = () => {
         <ThemedText>{error}</ThemedText>
       ) : busStops.length > 0 ? (
         <FlatList
+          showsVerticalScrollIndicator={false}
           style={styles.list}
           data={busStops}
           renderItem={({ item }) => <BusStopItem item={item} />}
