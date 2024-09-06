@@ -8,38 +8,50 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import Disabled from '../components/DisabledIcon';
 
 const Onboarding = () => {
-  const [locationPermission, setLocationPermission] = useState(null);
+  const [locationPermission, setLocationPermission] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const swiperRef = useRef(null);
+  const swiperRef = useRef<Swiper | null>(null); // Add type for swiperRef
   const router = useRouter();
 
   useEffect(() => {
     const checkPermission = async () => {
-      const status = await Location.getForegroundPermissionsAsync();
-      setLocationPermission(status.granted);
+      try {
+        const { granted } = await Location.getForegroundPermissionsAsync();
+        setLocationPermission(granted);
+      } catch (error) {
+        console.error("Failed to check location permission:", error);
+        Alert.alert('Error', 'Failed to check location permissions. Please try again.');
+      }
     };
     checkPermission();
   }, []);
 
   const requestPermission = async () => {
-    const { status } = await Location.requestForegroundPermissionsAsync();
-    if (status === 'granted') {
-      await AsyncStorage.setItem('onboarded', 'true');
-      router.replace('/(tabs)');
-    } else {
-      Alert.alert('Location permission is required to use this app.');
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status === 'granted') {
+        await AsyncStorage.setItem('onboarded', 'true');
+        router.replace('/(tabs)');
+      } else {
+        Alert.alert('Location permission is required to use this app.');
+      }
+    } catch (error) {
+      console.error("Failed to request location permission:", error);
+      Alert.alert('Error', 'Failed to request location permission. Please try again.');
     }
   };
 
-  const handleIndexChange = (index) => {
+  const handleIndexChange = (index: number) => { // Define index type as number
     setCurrentIndex(index);
   };
 
-  const handleSwipe = (index) => {
-    if (index === 0 && currentIndex === 0) {
-      swiperRef.current.scrollTo(0);
-    } else {
-      handleIndexChange(index);
+  const handleSwipe = (index: number) => { // Define index type as number
+    if (swiperRef.current) {
+      if (index === 0 && currentIndex === 0) {
+        swiperRef.current.scrollTo(0);
+      } else {
+        handleIndexChange(index);
+      }
     }
   };
 
@@ -52,6 +64,7 @@ const Onboarding = () => {
       onIndexChanged={handleIndexChange}
       onMomentumScrollEnd={(e, state) => handleSwipe(state.index)}
       loop={false}
+      scrollEnabled={locationPermission} 
     >
       <View style={styles.slide}>
         <Image source={require('../assets/images/singlebus.png')} style={styles.image} />
@@ -60,7 +73,10 @@ const Onboarding = () => {
       </View>
       <View style={styles.slide}>
         <Disabled height={180} width={180} fill="#fff" />
-        <Text style={styles.text}>We don't show wheelchair accessibility icons because all public buses are wheelchair accessible, as confirmed by the Ministry of Transport.</Text>
+        <Text style={styles.text}>
+          We don't show wheelchair accessibility icons because all public buses are wheelchair accessible, 
+          as confirmed by the Ministry of Transport.
+        </Text>
       </View>
       <View style={styles.slide}>
         <Ionicons
