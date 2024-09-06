@@ -3,10 +3,10 @@ import { View, Text, StyleSheet, ActivityIndicator, FlatList, RefreshControl, Im
 import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { useColorScheme } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
-import { calculateMinutesLeft } from '@/components/Calculation';
+import { calculateMinutesLeft } from '../utils/calculateMinutesLeft';
 import { fetchBusArrivalData } from '@/services/api';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { getCurrentLocation } from '../components/Location';
+import { getCurrentLocation } from '../services/getCurrentLocation';
 
 interface Arrival {
   key: string;

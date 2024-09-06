@@ -10,7 +10,7 @@ import Disabled from '../components/DisabledIcon';
 const Onboarding = () => {
   const [locationPermission, setLocationPermission] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const swiperRef = useRef<Swiper | null>(null); // Add type for swiperRef
+  const swiperRef = useRef<Swiper | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -41,11 +41,11 @@ const Onboarding = () => {
     }
   };
 
-  const handleIndexChange = (index: number) => { // Define index type as number
+  const handleIndexChange = (index: number) => {
     setCurrentIndex(index);
   };
 
-  const handleSwipe = (index: number) => { // Define index type as number
+  const handleSwipe = (index: number) => {
     if (swiperRef.current) {
       if (index === 0 && currentIndex === 0) {
         swiperRef.current.scrollTo(0);

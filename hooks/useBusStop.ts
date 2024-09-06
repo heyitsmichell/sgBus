@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import * as Location from 'expo-location';
-import { calculateDistance } from '@/components/Calculation';
+import { calculateDistance } from '../utils/calculateDistance';
 
 export const useBusStops = () => {
   const [busStops, setBusStops] = useState<any[]>([]);

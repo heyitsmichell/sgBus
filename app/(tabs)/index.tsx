@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 import { StyleSheet, FlatList, RefreshControl, View } from 'react-native';
-import Spinner from 'react-native-loading-spinner-overlay'; // Import the spinner component
+import Spinner from 'react-native-loading-spinner-overlay';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import BusStopItem from '@/components/BusStopTouchable';
