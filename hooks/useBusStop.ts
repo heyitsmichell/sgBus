@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import * as Location from 'expo-location';
 import { calculateDistance } from '../utils/calculateDistance';
+import { fetchBusStops as apiFetchBusStops } from '@/services/api';
 
 export const useBusStops = () => {
   const [busStops, setBusStops] = useState<any[]>([]);
@@ -26,18 +27,9 @@ export const useBusStops = () => {
 
       while (totalRecords === pageSize) {
         pageNumber++;
-        const response = await fetch(`https://datamall2.mytransport.sg/ltaodataservice/BusStops?$skip=${pageSize * (pageNumber - 1)}`, {
-          headers: {
-            'AccountKey': '4hMXtXzZQR+I8UTuxxO/qg==',
-            'Accept': 'application/json'
-          }
-        });
+        const data = await apiFetchBusStops(pageSize * (pageNumber - 1));
 
-        if (!response.ok) throw new Error('Network response was not ok.');
-
-        const data = await response.json();
         totalRecords = data.value.length;
-
         allBusStops = [...allBusStops, ...data.value];
       }
 
